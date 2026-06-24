@@ -1,0 +1,37 @@
+name: Build JCEF linux-amd64
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout CinemaMod/java-cef at MCEF commit
+        uses: actions/checkout@v4
+        with:
+          repository: CinemaMod/java-cef
+          ref: a78e832f9f13c2c688caea3d04d8b84fcd238d94
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential g++ cmake ninja-build openjdk-17-jdk python3 libgtk2.0-dev
+
+      - name: Build
+        run: |
+          export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+          export JAVA_INCLUDE_PATH=/usr/lib/jvm/java-17-openjdk-amd64/include
+          mkdir jcef_build && cd jcef_build
+          cmake -G "Ninja" -DPROJECT_ARCH=amd64 -DCMAKE_BUILD_TYPE=Release ..
+          ninja -j4
+          mv native/Release linux-amd64
+          strip linux-amd64/libcef.so
+          tar -czf linux-amd64.tar.gz linux-amd64
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-amd64
+          path: jcef_build/linux-amd64.tar.gz
+          retention-days: 90

@@ -27,6 +27,10 @@ jobs:
           ninja -j4
           mv native/Release linux-amd64
           strip linux-amd64/libcef.so
+          echo "=== libcef.so dependencies ==="
+          ldd linux-amd64/libcef.so || true
+          echo "=== libjcef.so dependencies ==="
+          ldd linux-amd64/libjcef.so || true
           tar -czf linux-amd64.tar.gz linux-amd64
 
       - name: Upload artifact
